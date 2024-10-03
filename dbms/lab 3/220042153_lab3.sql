@@ -1,4 +1,4 @@
-
+use lab3;
 create table branch
    (branch_name 	varchar(15)	not null,
     branch_city 	varchar(15)	not null,
@@ -139,6 +139,12 @@ where b.customer_name is not null or d.customer_name is not null;
 
 SELECT SUM(assets) AS total_assets
 FROM branch;
+
+SELECT b.branch_city, COUNT(DISTINCT a.account_number) AS total_accounts
+FROM account a
+JOIN branch b ON a.branch_name = b.branch_name
+GROUP BY b.branch_city;
+
 
 SELECT a.branch_name, AVG(a.balance) AS average_balance
 FROM account a
