@@ -1,3 +1,0 @@
-C:/Users/Arham Apon/Desktop/labs/DSA/lab 7/hw/cmake-build-debug/CMakeFiles/hw.dir
-C:/Users/Arham Apon/Desktop/labs/DSA/lab 7/hw/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Arham Apon/Desktop/labs/DSA/lab 7/hw/cmake-build-debug/CMakeFiles/rebuild_cache.dir

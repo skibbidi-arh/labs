@@ -1,15 +1,65 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
+import java.sql.*;
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        String username = "test2";
+        String password = "test123";
+        String url = "jdbc:mysql://localhost:3306/test2";
+
+        // SQL queries to create the table and insert data
+        String createTableQuery = " use lab8; CREATE TABLE IF NOT EXISTS customer (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "name VARCHAR(100), " +
+                "age INT)";
+
+        String insertDataQuery = "INSERT INTO customer (name, age) VALUES " +
+                "('Alice', 30), " +
+                "('Bob', 25), " +
+                "('Charlie', 35), " +
+                "('David', 40), " +
+                "('Eva', 29)";
+
+        // Query to calculate average age
+        String sqlQuery = "SELECT AVG(age) AS avg_age FROM customer";
+        double avgAge = 0;
+
+        try {
+            // 1) Register the driver class
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // 2) Create the connection object
+            Connection con = DriverManager.getConnection(url, username, password);
+            System.out.println("Connection to database successful");
+
+            // 3) Create the statement object
+            Statement statement = con.createStatement();
+
+            // 4) Create the table if not exists
+            statement.executeUpdate(createTableQuery);
+            System.out.println("Customer table created or already exists.");
+
+            // 5) Insert sample data
+            statement.executeUpdate(insertDataQuery);
+            System.out.println("Sample data inserted into customer table.");
+
+            // 6) Execute the query to calculate average age
+            ResultSet result = statement.executeQuery(sqlQuery);
+            if (result.next()) {
+                avgAge = result.getDouble("avg_age");
+            }
+            System.out.println("Average age: " + avgAge);
+
+            // 7) Close the connection, statement, and result set
+            result.close();
+            statement.close();
+            con.close();
+
+        } catch (SQLException e) {
+            System.out.println("Error while connecting to database. Exception: " + e);
+        } catch (ClassNotFoundException e) {
+            System.out.println("Failed to register driver. Exception: " + e);
         }
+
     }
 }
