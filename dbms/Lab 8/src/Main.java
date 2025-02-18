@@ -1,65 +1,71 @@
-
 import java.sql.*;
+import java.time.LocalDate;
+
 public class Main {
     public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test1";
+        String username = "test1";
+        String password = "test1";
 
-        String username = "test2";
-        String password = "test123";
-        String url = "jdbc:mysql://localhost:3306/test2";
+        try (Connection conn = DriverManager.getConnection(url, username, password);
+             Statement stmt = conn.createStatement()) {
 
-        // SQL queries to create the table and insert data
-        String createTableQuery = " use lab8; CREATE TABLE IF NOT EXISTS customer (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "name VARCHAR(100), " +
-                "age INT)";
+            System.out.println("Connected to the database.");
 
-        String insertDataQuery = "INSERT INTO customer (name, age) VALUES " +
-                "('Alice', 30), " +
-                "('Bob', 25), " +
-                "('Charlie', 35), " +
-                "('David', 40), " +
-                "('Eva', 29)";
 
-        // Query to calculate average age
-        String sqlQuery = "SELECT AVG(age) AS avg_age FROM customer";
-        double avgAge = 0;
-
-        try {
-            // 1) Register the driver class
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
-            // 2) Create the connection object
-            Connection con = DriverManager.getConnection(url, username, password);
-            System.out.println("Connection to database successful");
-
-            // 3) Create the statement object
-            Statement statement = con.createStatement();
-
-            // 4) Create the table if not exists
-            statement.executeUpdate(createTableQuery);
-            System.out.println("Customer table created or already exists.");
-
-            // 5) Insert sample data
-            statement.executeUpdate(insertDataQuery);
-            System.out.println("Sample data inserted into customer table.");
-
-            // 6) Execute the query to calculate average age
-            ResultSet result = statement.executeQuery(sqlQuery);
-            if (result.next()) {
-                avgAge = result.getDouble("avg_age");
+            String totalTransactionsQuery = "SELECT COUNT(*) AS transaction_count FROM TRANSACTIONS WHERE A_ID = 49";
+            ResultSet rs = stmt.executeQuery(totalTransactionsQuery);
+            if (rs.next()) {
+                System.out.println("Total number of transactions under account 49: " + rs.getInt("transaction_count"));
             }
-            System.out.println("Average age: " + avgAge);
 
-            // 7) Close the connection, statement, and result set
-            result.close();
-            statement.close();
-            con.close();
+
+            String creditCountQuery = "SELECT COUNT(*) AS credit_count FROM TRANSACTIONS WHERE TYPE = 0";
+            rs = stmt.executeQuery(creditCountQuery);
+            if (rs.next()) {
+                System.out.println("Total number of credits: " + rs.getInt("credit_count"));
+            }
+
+
+            String transactionsLast6MonthsQuery = "SELECT * FROM TRANSACTIONS WHERE DTM BETWEEN '2021-07-01' AND '2021-12-31'";
+            rs = stmt.executeQuery(transactionsLast6MonthsQuery);
+            System.out.println("Transactions in the last 6 months of 2021:");
+            while (rs.next()) {
+                System.out.printf("Transaction ID: %d, Date: %s, Account ID: %d, Amount: %.2f, Type: %s\n",
+                        rs.getInt("T_ID"), rs.getDate("DTM"), rs.getInt("A_ID"),
+                        rs.getDouble("AMOUNT"), (rs.getInt("TYPE") == 0 ? "Credit" : "Debit"));
+            }
+
+
+            String cipQuery = "SELECT COUNT(*) AS cip_count FROM ACCOUNT WHERE " +
+                    "(SELECT SUM(AMOUNT) FROM TRANSACTIONS WHERE A_ID = ACCOUNT.A_ID) > 5000000 " +
+                    "AND (SELECT SUM(CASE WHEN TYPE = 0 THEN AMOUNT ELSE -AMOUNT END) FROM TRANSACTIONS WHERE A_ID = ACCOUNT.A_ID) > 1000000";
+
+            String vipQuery = "SELECT COUNT(*) AS vip_count FROM ACCOUNT WHERE " +
+                    "(SELECT SUM(AMOUNT) FROM TRANSACTIONS WHERE A_ID = ACCOUNT.A_ID) BETWEEN 2500000 AND 4500000 " +
+                    "AND (SELECT SUM(CASE WHEN TYPE = 0 THEN AMOUNT ELSE -AMOUNT END) FROM TRANSACTIONS WHERE A_ID = ACCOUNT.A_ID) BETWEEN 500000 AND 900000";
+
+            String opQuery = "SELECT COUNT(*) AS op_count FROM ACCOUNT WHERE " +
+                    "(SELECT SUM(AMOUNT) FROM TRANSACTIONS WHERE A_ID = ACCOUNT.A_ID) < 1000000 " +
+                    "AND (SELECT SUM(CASE WHEN TYPE = 0 THEN AMOUNT ELSE -AMOUNT END) FROM TRANSACTIONS WHERE A_ID = ACCOUNT.A_ID) < 100000";
+
+            rs = stmt.executeQuery(cipQuery);
+            if (rs.next()) {
+                System.out.println("Number of CIP accounts: " + rs.getInt("cip_count"));
+            }
+
+            rs = stmt.executeQuery(vipQuery);
+            if (rs.next()) {
+                System.out.println("Number of VIP accounts: " + rs.getInt("vip_count"));
+            }
+
+            rs = stmt.executeQuery(opQuery);
+            if (rs.next()) {
+                System.out.println("Number of OP accounts: " + rs.getInt("op_count"));
+            }
 
         } catch (SQLException e) {
-            System.out.println("Error while connecting to database. Exception: " + e);
-        } catch (ClassNotFoundException e) {
-            System.out.println("Failed to register driver. Exception: " + e);
+            e.printStackTrace();
         }
-
     }
 }
